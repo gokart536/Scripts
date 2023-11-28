@@ -1,0 +1,86 @@
+# Mobius_
+# Implied Move For Various Times based on the Series IV
+# Mobius
+# V01.03.2017
+
+input show_label = yes;
+input nDays = 4; #hint nDays: Days left in series.
+input Series_IV = 1; #hint Series_IV: Series 1 is closest expirery. 
+input defClose = {default "Friday"};
+input ShowLabels = yes;
+input show252day = no;
+input show365day = no;
+input show1day = yes;
+input Label_Color_Choice = {default "pink", "cyan", "orange", "gray", "yellow", "red", "green", "dark_gray", "light_yellow", "white"};
+
+def CurrentDOW = GetDayOfWeek(GetYYYYMMDD());
+def cbar = if CurrentDOW == 5 
+           then BarNumber() 
+           else cbar[1];
+def c = if BarNumber() == cbar 
+        then close(period = AggregationPeriod.DAY)
+        else c[1];
+def t;
+switch (defClose) {
+
+case Friday:
+    t = if BarNumber() == cbar 
+        then close(period = AggregationPeriod.DAY)
+        else c[1];
+}
+def IV = if IsNaN(imp_volatility(period = AggregationPeriod.DAY))
+         then IV[1]
+         else imp_volatility(period = AggregationPeriod.DAY);
+def seriesIV = SeriesVolatility(series = Series_IV);
+def ImpMove = (((t * seriesIV * Sqrt(nDays)) / Sqrt(365)) / TickSize()) * TickSize();
+def ImpMove252 = (((t * seriesIV * Sqrt(nDays)) / Sqrt(252)) / TickSize()) * TickSize();
+def ImpMove365 = (((t * seriesIV * Sqrt(nDays)) / Sqrt(365)) / TickSize()) * TickSize();
+def ImpMove1 = Round(((t * seriesIV * Sqrt(1)) / Sqrt(365)) / TickSize(), 0) * TickSize();
+def LastBar= if !IsNaN(close) and IsNaN(close[-1]) 
+             then barnumber() 
+             else Double.NaN;
+def upline = if !IsNaN(close) and IsNaN(close[-1]) 
+             then t + ImpMove 
+             else if IsNaN(close) 
+                  then upline[1] 
+                  else Double.NaN;
+def upper = if BarNumber() >= HighestAll(lastBar) and
+                 BarNumber() <= HighestAll(lastBar) + nDays
+              then upline
+              else Double.NaN;
+   
+
+def lowline = if !IsNaN(close) and IsNaN(close[-1]) 
+              then t - ImpMove 
+              else if IsNaN(close) 
+                   then lowline[1] 
+                   else Double.NaN;
+def lower = if BarNumber() >= HighestAll(lastBar) and
+                 BarNumber() <= HighestAll(lastBar) + nDays
+              then lowline
+              else Double.NaN;
+ 
+
+def emu = close > upper;
+def emub = high > upper and close < upper;
+def emd = close < lower;
+def emdb = low < lower and close > lower;
+plot scan = emu or emub or emd or emdb;
+
+# End Code Implied Moves From Series IV
+
+AssignBackgroundColor(
+if scan and
+emu then Color.lime else
+if emd then color.light_red else
+if emdb then color.dark_red else
+if emub then color.dark_green else color.black);
+
+ addlabel(yes, 
+
+if emu then "Abv" else 
+if emd then "Blw" else 
+if emub then "RDn" else
+if emdb then "RUp" else "In");
+
+
