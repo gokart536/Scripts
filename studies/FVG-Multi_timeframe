@@ -1,0 +1,119 @@
+input threshold = 0.1;
+input aggregation1 = AggregationPeriod.FIFTEEN_MIN;
+input aggregation2 = AggregationPeriod.TEN_MIN;
+input aggregation3 = AggregationPeriod.FIVE_MIN;
+input showAggregation2 = yes;
+input showAggregation3 = yes;
+input rthOnly = no;
+input fillGaps = yes;
+
+AddLabel(yes, "15M FVG", Color.GREEN);
+AddLabel(showAggregation2, "10Min FVG", Color.BLUE);
+AddLabel(showAggregation3, "5Min FVG", Color.MAGENTA);
+
+# Note that aggregation periods below then current chart period will NOT show
+
+def rth = if SecondsTillTime(0930) <= 0 and SecondsTillTime(1600) > 0 then 1 else 0;
+def rthCheck = if rthOnly then if rth then yes else no else yes;
+
+# timeframe1
+
+def low1 = low(period = aggregation1);
+def high1 = high(period = aggregation1);
+
+def fvgBear1 = if low1[2] - high1 > 0 then 1 else 0;
+def fvgBearPctg1 = if AbsValue((high1 -low1[2])/low1[2]) > threshold/100 then 1 else 0;
+
+def fvgBull1 = if low1 - high1[2] > 0 then 1 else 0;
+def fvgBullPctg1 = if AbsValue((low1 - high1[2])/high1[2]) > threshold/100 then 1 else 0;
+
+def fvgBearH1 = if fvgBear1 and fvgBearPctg1 then low1[2] else 0;
+def fvgBearL1 = if fvgBearH1 then high1 else Double.NaN;
+
+def fvgBullH1 = if fvgBull1 and fvgBullPctg1 then low1 else 0;
+def fvgBullL1 = if fvgBullH1 then high1[2] else Double.NaN;
+
+def fvgBear1MemHigh = if fvgBearH1 then fvgBearH1 else if high1 > fvgBear1MemHigh[1] then Double.NaN else fvgBear1MemHigh[1];
+def fvgBear1MemLow = if fvgBearH1 then fvgBearL1 else if high1 > fvgBear1MemHigh[1] then Double.NaN else if fillGaps and high1 > fvgBear1MemLow[1] then high1 else fvgBear1MemLow[1];
+
+def fvgBull1MemLow = if fvgBullH1 then fvgBullL1 else if low1 < fvgBull1MemLow[1] then Double.NaN else fvgBull1MemLow[1];
+def fvgBull1MemHigh = if fvgBullH1 then fvgBullH1 else if low1 < fvgBull1MemLow[1] then Double.NaN else if fillGaps and low1 < fvgBull1MemHigh[1] then low1 else fvgBull1MemHigh[1];
+
+def fvgBear1MH = if fvgBear1MemHigh then fvgBear1MemHigh else double.nan;
+def fvgBear1ML = if fvgBear1MemLow then fvgBear1MemLow else double.nan;
+
+def fvgBull1MH = if fvgBull1MemHigh then fvgBull1MemHigh else double.nan;
+def fvgBull1ML = if fvgBull1MemLow then fvgBull1MemLow else double.nan;
+
+# timeframe 2
+ 
+def low2 = low(period = aggregation2);
+def high2 = high(period = aggregation2);
+
+def fvgBear2 = if low2[2] - high2 > 0 then 1 else 0;
+def fvgBearPctg2 = if AbsValue((high2 -low2[2])/low2[2]) > threshold/100 then 1 else 0;
+
+def fvgBull2 = if low2 - high2[2] > 0 then 1 else 0;
+def fvgBullPctg2 = if AbsValue((low2 - high2[2])/high2[2]) > threshold/100 then 1 else 0;
+
+def fvgBearH2 = if fvgBear2 and fvgBearPctg2 then low2[2] else 0;
+def fvgBearL2 = if fvgBearH2 then high2 else Double.NaN;
+
+def fvgBullH2 = if fvgBull2 and fvgBullPctg2 then low2 else 0;
+def fvgBullL2 = if fvgBullH2 then high2[2] else Double.NaN;
+
+def fvgBear2MemHigh = if fvgBearH2 then fvgBearH2 else if high2 > fvgBear2MemHigh[1] then Double.NaN else fvgBear2MemHigh[1];
+def fvgBear2MemLow = if fvgBearH2 then fvgBearL2 else if high2 > fvgBear2MemHigh[1] then Double.NaN else if fillGaps and high2 > fvgBear2MemLow[1] then high2 else fvgBear2MemLow[1];
+
+def fvgBull2MemLow = if fvgBullH2 then fvgBullL2 else if low2 < fvgBull2MemLow[1] then Double.NaN else fvgBull2MemLow[1];
+def fvgBull2MemHigh = if fvgBullH2 then fvgBullH2 else if low2 < fvgBull2MemLow[1] then Double.NaN else if fillGaps and low2 < fvgBull2MemHigh[1] then low2 else fvgBull2MemHigh[1];
+
+def fvgBear2MH = if fvgBear2MemHigh then fvgBear2MemHigh else double.nan;
+def fvgBear2ML = if fvgBear2MemLow then fvgBear2MemLow else double.nan;
+
+def fvgBull2MH = if fvgBull2MemHigh then fvgBull2MemHigh else double.nan;
+def fvgBull2ML = if fvgBull2MemLow then fvgBull2MemLow else double.nan;
+
+# timeframe 3
+
+def low3 = low(period = aggregation3);
+def high3 = high(period = aggregation3);
+
+def fvgBear3 = if low3[2] - high3 > 0 then 1 else 0;
+def fvgBearPctg3 = if AbsValue((high3 -low3[2])/low3[2]) > threshold/100 then 1 else 0;
+
+def fvgBull3 = if low3 - high3[2] > 0 then 1 else 0;
+def fvgBullPctg3 = if AbsValue((low3 - high3[2])/high3[2]) > threshold/100 then 1 else 0;
+
+def fvgBearH3 = if fvgBear3 and fvgBearPctg3 then low3[2] else 0;
+def fvgBearL3 = if fvgBearH3 then high3 else Double.NaN;
+
+def fvgBullH3 = if fvgBull3 and fvgBullPctg3 then low3 else 0;
+def fvgBullL3 = if fvgBullH3 then high3[2] else Double.NaN;
+
+def fvgBear3MemHigh = if fvgBearH3 then fvgBearH3 else if high3 > fvgBear3MemHigh[1] then Double.NaN else fvgBear3MemHigh[1];
+def fvgBear3MemLow = if fvgBearH3 then fvgBearL3 else if high3 > fvgBear3MemHigh[1] then Double.NaN else if fillGaps and high3 > fvgBear3MemLow[1] then high3 else fvgBear3MemLow[1];
+
+def fvgBull3MemLow = if fvgBullH3 then fvgBullL3 else if low3 < fvgBull3MemLow[1] then Double.NaN else fvgBull3MemLow[1];
+def fvgBull3MemHigh = if fvgBullH3 then fvgBullH3 else if low3 < fvgBull3MemLow[1] then Double.NaN else if fillGaps and low3 < fvgBull3MemHigh[1] then low3 else fvgBull3MemHigh[1];
+
+def fvgBear3MH = if fvgBear3MemHigh then fvgBear3MemHigh else double.nan;
+def fvgBear3ML = if fvgBear3MemLow then fvgBear3MemLow else double.nan;
+
+def fvgBull3MH = if fvgBull3MemHigh then fvgBull3MemHigh else double.nan;
+def fvgBull3ML = if fvgBull3MemLow then fvgBull3MemLow else double.nan;
+
+# plotting
+
+DefineGlobalColor("Aggregation 1", Color.GREEN);
+DefineGlobalColor("Aggregation 2", Color.BLUE);
+DefineGlobalColor("Aggregation 3", Color.MAGENTA);
+
+AddCloud(if rthCheck then fvgBear1MH else double.nan, if rthCheck then fvgBear1ML else double.nan, GlobalColor("Aggregation 1"));
+AddCloud(if rthCheck then fvgBull1MH else double.nan, if rthCheck then fvgBull1ML else double.nan,  GlobalColor("Aggregation 1"));
+
+AddCloud(if rthCheck and showAggregation2 then fvgBear2MH else double.nan, if rthCheck and showAggregation2 then fvgBear2ML else double.nan, GlobalColor("Aggregation 2"));
+AddCloud(if rthCheck and showAggregation2 then fvgBull2MH else double.nan, if rthCheck and showAggregation2 then fvgBull2ML else double.nan, GlobalColor("Aggregation 2"));
+
+AddCloud(if rthCheck and showAggregation3 then fvgBear3MH else double.nan, if rthCheck and showAggregation3 then fvgBear3ML else double.nan, GlobalColor("Aggregation 3"));
+AddCloud(if rthCheck and showAggregation3 then fvgBull3MH else double.nan, if rthCheck and showAggregation3 then fvgBull3ML else double.nan, GlobalColor("Aggregation 3"));
