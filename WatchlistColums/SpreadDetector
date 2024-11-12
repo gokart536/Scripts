@@ -1,0 +1,8 @@
+def a = ask();
+def b = bid();
+plot spread = Round((a-b)/((a+b)/2));
+AssignBackgroundColor(if(Round((a-b)/((a+b)/2)) <= .1)
+                      then Color.DARK_GREEN 
+                      else if between(Round((a-b)/((a+b)/2)), .1, .2) 
+                      then Color.DARK_GRAY 
+                      else Color.RED);
